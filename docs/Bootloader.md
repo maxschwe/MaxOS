@@ -1,2 +1,2 @@
-## 1 - Printing Hello World
-- in das A und B Register werden bestimmte Werte gelegt und mit `int 0x10` wird eine Funktion des Bios aufgerufen
+## 1 - Hello World
+- in das A und B Register werden bestimmte Werte gelegt und mit `int 0x10` wird eine Funktion des Bios aufgerufen (in $AH$ wird ein bestimmter Bios Befehl ausgewählt und $AL$ und $B$ fungieren als Parameter)
