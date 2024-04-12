@@ -15,13 +15,6 @@ start:
     ; results in an jump to absolute address 0x7c0 * 16 + step2
     jmp 0x7c0:step2
 
-handle_zero:
-    mov ah, 0eh
-    mov al, 'A'
-    mov bx, 0x00
-    int 0x10
-    iret
-
 step2:
     cli ; Clear Interrupts
 
@@ -35,16 +28,26 @@ step2:
     mov sp, 0x7c00
     sti ; Enable Interrupts
 
-    ; setup interrupt vector table
-    mov word[ss:0x00], handle_zero
-    mov word[ss:0x02], 0x7c0
-
-    int 0
+    ; read sector from disk
+    mov ah, 02h ; Read Sector Command
+    mov al, 1 ; 1 sector should be read
+    mov ch, 0 ; Cylinder low eight bits
+    mov cl, 2 ; Sector Number (numbering starts at 1)
+    mov dh, 0 ; head number
+    ; dl is already set by bios
+    mov bx, buffer
+    int 0x13
+    jc error
 
     ; print welcome msg
-    mov si, welcome
+    mov si, buffer
     call print
 
+    jmp $
+
+error:
+    mov si, error_message
+    call print
     jmp $
 
 print:
@@ -64,8 +67,9 @@ print_char:
     int 0x10
     ret
 
-welcome: db 'Hello World!', 0
-
+error_message: db 'Failed to load sector', 0
 
 times 510-($ - $$) db 0
 dw 0xAA55
+
+buffer:
