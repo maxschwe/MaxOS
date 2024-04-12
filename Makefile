@@ -1,7 +1,18 @@
-all:
-	nasm -f bin ./src/boot.asm -o ./bin/boot.bin
-	dd if=./temp/welcome.txt >> ./bin/boot.bin
-	dd if=/dev/zero bs=512 count=1 >> ./bin/boot.bin
+all: build run
+
+build: ./bin/boot.bin
+
+./bin/boot.bin: ./src/boot/boot.asm
+	nasm -f bin ./src/boot/boot.asm -o ./bin/boot.bin
 
 run:
 	qemu-system-x86_64 -hda ./bin/boot.bin
+
+hello_world: ./bin/hello_world.bin
+	# qemu-system-x86_64 -hda ./bin/hello_world.bin
+
+./bin/hello_world.bin: ./src/boot/helloworld_boot.asm
+	nasm -f bin ./src/boot/helloworld_boot.asm -o ./bin/hello_world.bin
+
+clean:
+	rm -f ./bin/boot.bin
