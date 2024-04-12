@@ -14,6 +14,14 @@ start:
     ; sets code segment to 0x7c0 and instruction pointer to the address of step2
     ; results in an jump to absolute address 0x7c0 * 16 + step2
     jmp 0x7c0:step2
+
+handle_zero:
+    mov ah, 0eh
+    mov al, 'A'
+    mov bx, 0x00
+    int 0x10
+    iret
+
 step2:
     cli ; Clear Interrupts
 
@@ -25,9 +33,16 @@ step2:
     mov ax, 0x00
     mov ss, ax
     mov sp, 0x7c00
-
     sti ; Enable Interrupts
-    mov si, message
+
+    ; setup interrupt vector table
+    mov word[ss:0x00], handle_zero
+    mov word[ss:0x02], 0x7c0
+
+    int 0
+
+    ; print welcome msg
+    mov si, welcome
     call print
 
     jmp $
@@ -49,7 +64,7 @@ print_char:
     int 0x10
     ret
 
-message: db 'Hello World!', 0
+welcome: db 'Hello World!', 0
 
 
 times 510-($ - $$) db 0
