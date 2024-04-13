@@ -40,7 +40,7 @@ gdt_start:
 gdt_null:
     dd 0x0
     dd 0x0
-; offset 0x8
+; Kernel mode code segment, offset in GDT should be 0x8 (it is after the null descriptor)
 gdt_code:       ; CS should point to this
     dw 0xffff   ; segment limit first 0-15 bits
     dw 0        ; base first 0-15 bits
@@ -48,7 +48,7 @@ gdt_code:       ; CS should point to this
     db 0x9a     ; Access byte
     db 11001111b; High 4 bit flags and low 4 bit flags
     db 0        ; Base 24-31 bits
-; offset 0x10
+; Kernel mode data segment, offset in GDT should be 0x10 (it is after the code segment which is 8 bytes wide)
 gdt_data:       ; DS, SS, ES, FS and GS should point to this
     dw 0xffff   ; segment limit first 0-15 bits
     dw 0        ; base first 0-15 bits
