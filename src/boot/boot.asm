@@ -33,33 +33,46 @@ step2:
     mov sp, 0x7c00
     sti ; Enable Interrupts
 
+.load_protected:
+    cli
+    lgdt[gdt_descriptor]
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    jmp CODE_SEG:load32
+
 ; GDT
 gdt_start:
-; Null descriptor: never referenced by processor and should always contain no data
-; is 8 bytes wide
+; Null descriptor (first entry): never referenced by processor and should always contain no data
+; width: 8 bytes
 gdt_null:
     dd 0x0
     dd 0x0
-; Kernel mode code segment, offset in GDT should be 0x8 (it is after the null descriptor)
-gdt_code:       ; CS should point to this
-    dw 0xffff   ; segment limit first 0-15 bits
-    dw 0        ; base first 0-15 bits
-    db 0        ; base 16-23 bits
-    db 0x9a     ; Access byte
-    db 11001111b; High 4 bit flags and low 4 bit flags
-    db 0        ; Base 24-31 bits
-; Kernel mode data segment, offset in GDT should be 0x10 (it is after the code segment which is 8 bytes wide)
-gdt_data:       ; DS, SS, ES, FS and GS should point to this
-    dw 0xffff   ; segment limit first 0-15 bits
-    dw 0        ; base first 0-15 bits
-    db 0        ; base 16-23 bits
-    db 0x92     ; Access byte
-    db 11001111b; High 4 bit flags and low 4 bit flags
-    db 0        ; Base 24-31 bits
+; Kernel mode code segment descriptor (second entry), offset in GDT should be 0x8 (it is after the null descriptor)
+gdt_code:       ; CS should point to this; width: 8 bytes
+    dw 0xffff   ; limit: 0-15 bits                                      (location 00-15 bit)
+    dw 0        ; base: 0-15 bits                                       (location 16-31 bit)
+    db 0        ; base: 16-23 bits                                      (location 32-39 bit)
+    db 10011010b; Access byte                                           (location 40-47 bit)
+    db 11001111b; High 4 bits: flags, low 4 bits: limit 16-19 bits      (location 48-55 bit)
+    db 0        ; base: 24-31 bits                                      (location 56-63 bit)
+; Kernel mode data segment descriptor (third entry), offset in GDT should be 0x10 (it is after the code segment which is 8 bytes wide)
+gdt_data:       ; DS, SS, ES, FS and GS should point to this; width: 8 bytes
+    dw 0xffff   ; limit: 0-15 bits                                      (location 00-15 bit)
+    dw 0        ; base: 0-15 bits                                       (location 16-31 bit)
+    db 0        ; base: 16-23 bits                                      (location 32-39 bit)
+    db 10010010b; Access byte                                           (location 40-47 bit)
+    db 11001111b; High 4 bits: flags, low 4 bits: limit 16-19 bits      (location 48-55 bit)
+    db 0        ; base: 24-31 bits                                      (location 56-63 bit)
 gdt_end:
 gdt_descriptor:
-    dw gdt_end - gdt_start - 1 ; gives the size of the gdt descriptor
-    dd gdt_start
+    dw gdt_end - gdt_start - 1 ; gives the size of the gdt descriptor (it is always -1 because so the size can be up to 65536 (instead of 65535) and a size of 0 would eh be invalid)
+    dd gdt_start               ; gives the offset of the gdt descriptor table
+
+[BITS 32]
+load32:
+    jmp $
 
 times 510-($ - $$) db 0
 dw 0xAA55
