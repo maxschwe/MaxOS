@@ -9,7 +9,7 @@ run:
 	qemu-system-x86_64 -hda ./bin/boot.bin
 
 hello_world: ./bin/hello_world.bin
-	# qemu-system-x86_64 -hda ./bin/hello_world.bin
+	qemu-system-x86_64 -hda ./bin/hello_world.bin
 
 ./bin/hello_world.bin: ./src/boot/helloworld_boot.asm
 	nasm -f bin ./src/boot/helloworld_boot.asm -o ./bin/hello_world.bin

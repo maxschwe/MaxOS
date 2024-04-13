@@ -2,14 +2,32 @@ ORG 0x7c00
 BITS 16
 
 start:
-    mov ah, 0x01
-    jmp [testing]
-    mov bh, 0x02
+    mov ax, 0x7c0
+    mov ds, ax
+    mov si, hello_world
+    call print
 
-dd testing
+    jmp $
 
-testing:
-    mov cx, 0x03
+print:
+    mov bx, 0
+
+.loop:
+    lodsb
+    cmp al, 0
+    je .done
+    call print_char
+
+    jmp .loop
+.done:
+    ret
+
+print_char:
+    mov ah, 0eh
+    int 0x10
+    ret
+
+hello_world: db 'Hello World!', 0
 
 times 510 - ($ - $$) db 0
 dw 0xaa55
